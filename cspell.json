@@ -1,0 +1,30 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "shadcn",
+    "oklch",
+    "rgba",
+    "fontsource",
+    "Geist",
+    "Lucide",
+    "Radix",
+    "Roboto",
+    "Segoe",
+    "Consolas",
+    "monospace",
+    "grayscale",
+    "tailwindcss",
+    "recharts",
+    "clsx",
+    "cn",
+    "tsx",
+    "tsconfig",
+    "vite",
+    "eslint",
+    "cspell",
+    "CDR",
+    "mockapi",
+    "ERESOLVE"
+  ]
+}
