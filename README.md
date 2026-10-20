@@ -69,7 +69,8 @@ Responsive screenshots have been captured for desktop, tablet, and mobile. Add t
 
 For a Vercel deployment, import the GitHub repository, use the Vite framework preset, and deploy the production build. Verify that the deployed application loads call records successfully.
 
-**Live URL:** To be added after deployment.
+**Live URL:**
+[Live link](https://call-analytics-dashboard-xi.vercel.app/)
 
 ## Repository
 
