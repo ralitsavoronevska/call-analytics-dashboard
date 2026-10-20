@@ -1,8 +1,19 @@
 import { useMemo, useState } from "react"
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+
 import {
   Bar,
   BarChart,
   CartesianGrid,
+  Line,
+  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -19,6 +30,15 @@ const PAGE_SIZE = 10
 const numberFormatter = new Intl.NumberFormat("en-GB", {
   maximumFractionDigits: 2,
 })
+
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+})
+
+function formatCurrency(value: number): string {
+  return currencyFormatter.format(value)
+}
 
 function formatNumber(value: number): string {
   return numberFormatter.format(value)
@@ -63,6 +83,7 @@ function calculateMetrics(records: CallRecord[]) {
   return {
     totalCalls,
     successfulCalls,
+    failedCalls: totalCalls - successfulCalls,
     successRate:
       totalCalls > 0 ? (successfulCalls / totalCalls) * 100 : 0,
     averageDuration:
@@ -81,13 +102,20 @@ function StatCard({
   description: string
 }) {
   return (
-    <article className="rounded-xl border border-slate-800 bg-slate-900 p-5 shadow-sm">
-      <p className="text-sm font-medium text-slate-400">{title}</p>
-      <p className="mt-3 text-3xl font-bold tracking-tight text-white">
-        {value}
-      </p>
-      <p className="mt-2 text-xs text-slate-500">{description}</p>
-    </article>
+    <Card className="border-slate-800 bg-slate-900 text-white shadow-sm">
+      <CardHeader>
+        <CardTitle className="text-sm font-medium text-slate-400">
+          {title}
+        </CardTitle>
+      </CardHeader>
+
+      <CardContent>
+        <p className="text-3xl font-bold tracking-tight">{value}</p>
+        <CardDescription className="mt-2 text-xs text-slate-400">
+          {description}
+        </CardDescription>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -145,6 +173,61 @@ function App() {
     return [...grouped.entries()]
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([date, calls]) => ({ date, calls }))
+  }, [filteredRecords])
+
+  const durationChartData = useMemo(() => {
+    if (filteredRecords.length === 0) return []
+
+    const durations = filteredRecords.map(
+      (record) => record.callDuration,
+    )
+
+    return [
+      {
+        metric: "Shortest",
+        seconds: Math.min(...durations),
+      },
+      {
+        metric: "Average",
+        seconds: metrics.averageDuration,
+      },
+      {
+        metric: "Longest",
+        seconds: Math.max(...durations),
+      },
+    ]
+  }, [filteredRecords, metrics.averageDuration])
+
+  const costChartData = useMemo(() => {
+    const grouped = new Map<
+      string,
+      { totalCost: number; calls: number }
+    >()
+
+    for (const record of filteredRecords) {
+      const city = record.city.trim() || "Unknown"
+      const cost = Number(record.callCost)
+
+      const current = grouped.get(city) ?? {
+        totalCost: 0,
+        calls: 0,
+      }
+
+      grouped.set(city, {
+        totalCost:
+          current.totalCost + (Number.isFinite(cost) ? cost : 0),
+        calls: current.calls + 1,
+      })
+    }
+
+    return [...grouped.entries()]
+      .map(([city, values]) => ({
+        city,
+        calls: values.calls,
+        totalCost: values.totalCost,
+        averageCost: values.totalCost / values.calls,
+      }))
+      .sort((a, b) => b.totalCost - a.totalCost)
   }, [filteredRecords])
 
   const totalPages = Math.max(
@@ -294,7 +377,7 @@ function App() {
 
             <section
               aria-label="Key performance indicators"
-              className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+              className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5"
             >
               <StatCard
                 title="Total Calls"
@@ -309,6 +392,16 @@ function App() {
               />
 
               <StatCard
+                title="Failed Calls"
+                value={formatNumber(metrics.failedCalls)}
+                description={`${
+                  metrics.totalCalls > 0
+                    ? (100 - metrics.successRate).toFixed(1)
+                    : "0.0"
+                }% failure rate`}
+              />
+
+              <StatCard
                 title="Average Duration"
                 value={formatDuration(metrics.averageDuration)}
                 description="Average duration per call"
@@ -316,14 +409,14 @@ function App() {
 
               <StatCard
                 title="Total Cost"
-                value={formatNumber(metrics.totalCost)}
+                value={formatCurrency(metrics.totalCost)}
                 description="Sum of reported call costs"
               />
             </section>
 
             <section className="rounded-xl border border-slate-800 bg-slate-900 p-5">
               <div className="mb-6">
-                <h2 className="text-lg font-semibold">Call Volume</h2>
+                <h2 className="text-lg font-semibold">Call Activity Timeline</h2>
                 <p className="mt-1 text-sm text-slate-400">
                   Number of calls grouped by start date
                 </p>
@@ -336,7 +429,7 @@ function App() {
               ) : (
                 <div className="h-72 w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
+                    <LineChart
                       data={chartData}
                       margin={{ top: 10, right: 10, left: -20, bottom: 10 }}
                     >
@@ -366,16 +459,265 @@ function App() {
                           color: "#f8fafc",
                         }}
                       />
-
-                      <Bar
+                      <Line
+                        type="monotone"
                         dataKey="calls"
+                        name="Calls"
+                        stroke="#10b981"
+                        strokeWidth={3}
+                        dot={{ r: 5 }}
+                        activeDot={{ r: 7 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </section>
+
+            <section
+              aria-labelledby="duration-analytics-title"
+              className="rounded-xl border border-slate-800 bg-slate-900 p-5"
+            >
+              <div className="mb-6">
+                <h2
+                  id="duration-analytics-title"
+                  className="text-lg font-semibold"
+                >
+                  Call Duration Analytics
+                </h2>
+                <p className="mt-1 text-sm text-slate-400">
+                  Shortest, average and longest call duration
+                </p>
+              </div>
+
+              {durationChartData.length === 0 ? (
+                <p className="py-12 text-center text-slate-400">
+                  No duration data available.
+                </p>
+              ) : (
+                <div className="h-72 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={durationChartData}
+                      margin={{ top: 10, right: 10, left: -15, bottom: 10 }}
+                    >
+                      <CartesianGrid
+                        stroke="#334155"
+                        strokeDasharray="3 3"
+                        vertical={false}
+                      />
+                      <XAxis
+                        dataKey="metric"
+                        stroke="#94a3b8"
+                        tick={{ fontSize: 12 }}
+                      />
+                      <YAxis
+                        stroke="#94a3b8"
+                        tick={{ fontSize: 11 }}
+                        tickFormatter={(value: number) => `${value}s`}
+                      />
+                      <Tooltip
+                        formatter={(value) =>
+                          formatDuration(Number(value ?? 0))
+                        }
+                        contentStyle={{
+                          backgroundColor: "#0f172a",
+                          borderColor: "#334155",
+                          borderRadius: "8px",
+                          color: "#f8fafc",
+                        }}
+                      />
+                      <Bar
+                        dataKey="seconds"
+                        name="Call Duration"
                         fill="#10b981"
                         radius={[5, 5, 0, 0]}
+                        maxBarSize={100}
                       />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               )}
+            </section>
+
+            <section
+              aria-labelledby="cost-analytics-title"
+              className="rounded-xl border border-slate-800 bg-slate-900 p-5"
+            >
+              <div className="mb-6">
+                <h2
+                  id="cost-analytics-title"
+                  className="text-lg font-semibold"
+                >
+                  Call Cost Analytics
+                </h2>
+                <p className="mt-1 text-sm text-slate-400">
+                  Total call cost by city and average cost per call
+                </p>
+              </div>
+
+              {costChartData.length === 0 ? (
+                <p className="py-12 text-center text-slate-400">
+                  No cost data available.
+                </p>
+              ) : (
+                <>
+                  <div className="mb-6 rounded-lg border border-slate-800 bg-slate-950/50 p-4">
+                    <p className="text-sm text-slate-400">
+                      Average Cost per Call
+                    </p>
+                    <p className="mt-2 text-2xl font-bold text-white">
+                      {formatCurrency(
+                        metrics.totalCost / metrics.totalCalls,
+                      )}
+                    </p>
+                  </div>
+
+                  <div className="h-80 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={costChartData.slice(0, 10)}
+                        layout="vertical"
+                        margin={{
+                          top: 10,
+                          right: 25,
+                          left: 25,
+                          bottom: 10,
+                        }}
+                      >
+                        <CartesianGrid
+                          stroke="#334155"
+                          strokeDasharray="3 3"
+                          horizontal={false}
+                        />
+
+                        <XAxis
+                          type="number"
+                          stroke="#94a3b8"
+                          tick={{ fontSize: 11 }}
+                          tickFormatter={(value: number) =>
+                            `$${formatNumber(value)}`
+                          }
+                        />
+
+                        <YAxis
+                          type="category"
+                          dataKey="city"
+                          stroke="#94a3b8"
+                          tick={{ fontSize: 11 }}
+                          width={100}
+                        />
+
+                        <Tooltip
+                          formatter={(value) =>
+                            formatCurrency(Number(value ?? 0))
+                          }
+                          contentStyle={{
+                            backgroundColor: "#0f172a",
+                            borderColor: "#334155",
+                            borderRadius: "8px",
+                            color: "#f8fafc",
+                          }}
+                        />
+
+                        <Bar
+                          dataKey="totalCost"
+                          name="Total Cost"
+                          fill="#10b981"
+                          radius={[0, 5, 5, 0]}
+                          maxBarSize={28}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <p className="mt-3 text-xs text-slate-500">
+                    Showing the top 10 cities by total call cost.
+                  </p>
+                </>
+              )}
+            </section>
+
+            <section
+              aria-labelledby="calls-by-city-title"
+              className="rounded-xl border border-slate-800 bg-slate-900 p-5"
+            >
+              <div className="mb-6">
+                <h2
+                  id="calls-by-city-title"
+                  className="text-lg font-semibold"
+                >
+                  Calls by City
+                </h2>
+                <p className="mt-1 text-sm text-slate-400">
+                  Number of calls grouped by city
+                </p>
+              </div>
+
+              {costChartData.length === 0 ? (
+                <p className="py-12 text-center text-slate-400">
+                  No city data available.
+                </p>
+              ) : (
+                <div className="h-80 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={[...costChartData]
+                        .sort((a, b) => b.calls - a.calls)
+                        .slice(0, 10)}
+                      layout="vertical"
+                      margin={{
+                        top: 10,
+                        right: 25,
+                        left: 25,
+                        bottom: 10,
+                      }}
+                    >
+                      <CartesianGrid
+                        stroke="#334155"
+                        strokeDasharray="3 3"
+                        horizontal={false}
+                      />
+
+                      <XAxis
+                        type="number"
+                        allowDecimals={false}
+                        stroke="#94a3b8"
+                        tick={{ fontSize: 11 }}
+                      />
+
+                      <YAxis
+                        type="category"
+                        dataKey="city"
+                        stroke="#94a3b8"
+                        tick={{ fontSize: 11 }}
+                        width={100}
+                      />
+
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#0f172a",
+                          borderColor: "#334155",
+                          borderRadius: "8px",
+                          color: "#f8fafc",
+                        }}
+                      />
+
+                      <Bar
+                        dataKey="calls"
+                        name="Calls"
+                        fill="#10b981"
+                        radius={[0, 5, 5, 0]}
+                        maxBarSize={28}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+
+              <p className="mt-3 text-xs text-slate-500">
+                Showing the top 10 cities by call count.
+              </p>
             </section>
 
             <section className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900">
@@ -446,7 +788,7 @@ function App() {
                         </td>
 
                         <td className="px-5 py-4 text-slate-300">
-                          {record.callCost}
+                          {formatCurrency(Number(record.callCost))}
                         </td>
                       </tr>
                     ))}
