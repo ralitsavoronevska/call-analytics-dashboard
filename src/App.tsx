@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import {
   Card,
@@ -119,7 +119,30 @@ function StatCard({
   )
 }
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(
+    () => window.matchMedia("(max-width: 639px)").matches,
+  )
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)")
+
+    const handleChange = (event: MediaQueryListEvent) => {
+      setIsMobile(event.matches)
+    }
+
+    mediaQuery.addEventListener("change", handleChange)
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleChange)
+    }
+  }, [])
+
+  return isMobile
+}
+
 function App() {
+  const isMobile = useIsMobile()
   const { data, loading, error, retry } = useCallRecords()
 
   const [search, setSearch] = useState("")
@@ -573,15 +596,15 @@ function App() {
                     </p>
                   </div>
 
-                  <div className="h-80 w-full">
+                  <div className="h-80 w-full min-w-0">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
                         data={costChartData.slice(0, 10)}
                         layout="vertical"
                         margin={{
                           top: 10,
-                          right: 25,
-                          left: 25,
+                          right: isMobile ? 5 : 25,
+                          left: isMobile ? 0 : 25,
                           bottom: 10,
                         }}
                       >
@@ -605,7 +628,7 @@ function App() {
                           dataKey="city"
                           stroke="#94a3b8"
                           tick={{ fontSize: 11 }}
-                          width={100}
+                          width={isMobile ? 75 : 100}
                         />
 
                         <Tooltip
@@ -659,7 +682,7 @@ function App() {
                   No city data available.
                 </p>
               ) : (
-                <div className="h-80 w-full">
+                <div className="h-80 w-full min-w-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                       data={[...costChartData]
@@ -668,8 +691,8 @@ function App() {
                       layout="vertical"
                       margin={{
                         top: 10,
-                        right: 25,
-                        left: 25,
+                        right: isMobile ? 5 : 25,
+                        left: isMobile ? 0 : 25,
                         bottom: 10,
                       }}
                     >
@@ -691,7 +714,7 @@ function App() {
                         dataKey="city"
                         stroke="#94a3b8"
                         tick={{ fontSize: 11 }}
-                        width={100}
+                        width={isMobile ? 75 : 100}
                       />
 
                       <Tooltip

@@ -1,28 +1,54 @@
-# Call Analytics Dashboard
+# 📊 Call Analytics Dashboard
+🔗 [Vercel Live link](https://call-analytics-dashboard-xi.vercel.app/)
 
 A responsive call detail records (CDR) analytics dashboard built with React, TypeScript, and Vite. It fetches call records from an external API and provides interactive summaries, charts, and a searchable call log.
 
+<details>
+<summary>📸 Screenshots</summary>
+
+<br>
+
+## 🖥️ Desktop preview:
+
+<img src="docs/desktop.png" loading="lazy">
+
+<table width="100%">
+  <thead>
+    <tr>
+      <th style="text-align: center;">📱 Tablet</th>
+      <th style="text-align: center;">📱 Mobile</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td width="50%" style="vertical-align: top;"><img src="docs/tablet.png" loading="lazy"></td>
+      <td width="50%"><img src="docs/mobile.png" loading="lazy"></td>
+    </tr>
+  </tbody>
+</table>
+</details>
+
 ## Features
 
-- **Five KPI cards:** total calls, successful calls, failed calls, average call duration, and total call cost (USD).
-- **Call Activity Timeline:** number of calls grouped by start date.
-- **Call Duration Analytics:** shortest, average, and longest call durations.
-- **Call Cost Analytics:** total call cost by city (top 10) and average cost per call.
-- **Calls by City:** call counts by city (top 10).
-- **Call Records:** searchable, filterable, paginated table with call details and USD-formatted costs.
-- **Data states:** loading, error handling, and retry functionality.
-- **Responsive design:** desktop, tablet, and mobile layouts, including horizontal scrolling for the call records table on smaller screens.
+- ✅ **Five KPI cards:** total calls, successful calls, failed calls, average call duration, and total call cost (USD).
+- ✅ **Call Activity Timeline:** number of calls grouped by start date.
+- ✅ **Call Duration Analytics:** shortest, average, and longest call durations.
+- ✅ **Call Cost Analytics:** total call cost by city (top 10) and average cost per call.
+- ✅ **Calls by City:** call counts by city (top 10).
+- ✅ **Call Records:** searchable, filterable, paginated table with call details and USD-formatted costs.
+- ✅ **Data states:** loading, error handling, and retry functionality.
+- ✅ **Responsive design:** desktop, tablet, and mobile layouts, including horizontal scrolling for the call records table on smaller screens.
 
 The dashboard metrics and charts update based on the active search and filters.
 
 ## Tech stack
 
-- React 19 and TypeScript
-- Vite
-- Tailwind CSS 4
-- shadcn/ui components
-- Recharts
-- External CDR API (MockAPI)
+- ✨ React 19 and TypeScript
+- ✨ Vite
+- ✨ Tailwind CSS 4
+- ✨ shadcn/ui components
+- ✨ Recharts
+- ✨ External CDR API (MockAPI)
 
 ## Getting started
 
@@ -53,29 +79,27 @@ The production build is generated in `dist/`.
 
 Call records are retrieved by `src/services/cdr.service.ts`, with request state and retry logic managed by `src/hooks/useCallRecords.ts`.
 
-The external API must be reachable from the browser and allow cross-origin requests (CORS). If the API is unavailable, the dashboard displays an error state with a retry action. Do not put private API credentials in client-side source code or Vite environment variables exposed to the browser.
-
-## Screenshots
-
-Responsive screenshots have been captured for desktop, tablet, and mobile. Add the selected image files to `docs/screenshots/` and insert their relative Markdown links here before submission.
-
-<!-- Example after adding a screenshot:
-![Call Analytics Dashboard — desktop](docs/screenshots/desktop.png)
--->
+The external API must be reachable from the browser and allow cross-origin requests (CORS). If the API is unavailable, the dashboard displays an error state with a retry action.
 
 ## Deployment
 
-**Target platform:** Vercel (deployment pending).
+The application is deployed on Vercel.
 
-For a Vercel deployment, import the GitHub repository, use the Vite framework preset, and deploy the production build. Verify that the deployed application loads call records successfully.
-
-**Live URL:**
-[Live link](https://call-analytics-dashboard-xi.vercel.app/)
-
-## Repository
-
-[GitHub — call-analytics-dashboard](https://github.com/ralitsavoronevska/call-analytics-dashboard)
+**Live Demo:** [Call Analytics Dashboard](https://call-analytics-dashboard-xi.vercel.app/)
 
 ## Notes
 
 Call costs are displayed in USD as specified in the assignment. The dashboard visualizes the records returned by the configured API; the accuracy of its metrics depends on the underlying dataset.
+
+# 🌟 Inspiration & Credits:
+
+- 🪄 [ChatGPT](https://chatgpt.com/)
+- 🎨 [Shadcn Admin Free React Theme](https://www.shadcn.io/template/satnaing-shadcn-admin)
+
+---
+
+🙌 Thank you for checking out my project! More is coming 🔜.
+
+Stay tuned 🚀 and please don't forget to give the project a star! ⭐
+
+Made with lots of 💗, ☕, and a sprinkle of ✨ by Ralitsa Voronevska!
