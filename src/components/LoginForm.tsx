@@ -1,4 +1,3 @@
-
 import { useState, type SubmitEvent } from "react"
 
 import { login } from "@/services/auth.service"

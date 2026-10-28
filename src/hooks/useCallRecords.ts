@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react"
 import { getCallRecords } from "@/services/cdr.service"
 import type { CallRecord } from "@/types/cdr"

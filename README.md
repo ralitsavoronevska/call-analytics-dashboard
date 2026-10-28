@@ -41,7 +41,7 @@ A responsive telecom call-detail-record (CDR) analytics dashboard built with Rea
 - ✅ **Data states:** loading, error handling, and retry functionality.
 - ✅ **Responsive design:** desktop, tablet, and mobile layouts, including horizontal scrolling for the call records table on smaller screens.
 
-The dashboard metrics and charts update based on active search and filters. The backend database contains 10,000 imported CDR records used in local integration testing.
+The dashboard metrics and charts update based on active search and filters. The backend database contains 10,000 imported CDR records; the deployed dashboard has also been verified to load them through the production API.
 
 ## Tech stack
 
@@ -52,6 +52,17 @@ The dashboard metrics and charts update based on active search and filters. The 
 - Recharts
 - FastAPI REST backend with JWT authentication
 - PostgreSQL (Neon) through the backend
+
+## Demo accounts
+
+The following accounts are provided for evaluating the **demo application only**. The dataset is synthetic/sample CDR data. Do not reuse these credentials for other services.
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | `admin@example.com` | `qazwsxedcrfv123` |
+| Analyst | `analyst@example.com` | `tgbyhnujmik,123` |
+
+To test the application, open the [live dashboard](https://call-analytics-dashboard-xi.vercel.app/), sign in with either account, and explore the analytics and call records. The API requires a bearer token for protected endpoints. **These are publicly documented demo credentials; rotate or disable them before connecting real or sensitive data.**
 
 ## Getting started
 
@@ -99,7 +110,7 @@ The production build is generated in `dist/`.
 - Protected requests include an `Authorization: Bearer <token>` header.
 - The JWT is kept in React application state; a page reload requires signing in again.
 
-The API base URL is configured through `VITE_API_BASE_URL`. The backend must be accessible from the browser and permit the frontend origin via CORS.
+The API base URL is configured through `VITE_API_BASE_URL`. Both service modules strip trailing slashes from this value before appending API paths, preventing accidental `//api/...` URLs. The backend must be accessible from the browser and permit the frontend origin via CORS.
 
 ## Deployment
 
@@ -107,9 +118,11 @@ The frontend is deployed on Vercel:
 
 **Live Demo:** [Call Analytics Dashboard](https://call-analytics-dashboard-xi.vercel.app/)
 
-The production `VITE_API_BASE_URL` points to `https://call-analytics-backend.onrender.com`.
+The production `VITE_API_BASE_URL` points to `https://call-analytics-backend-o2lz.onrender.com`.
 
-**Known hosting issue (October 28, 2026):** Although the backend deployment and startup succeeded, Render currently responds to public requests with `503 Service Unavailable` and `x-render-routing: suspend-by-user`. The issue has been escalated to Render Support. The login screen is accessible on Vercel, but production sign-in and dashboard data retrieval are currently blocked by backend availability. Local authentication and dashboard integration were tested successfully.
+**Production verification (October 28, 2026):** the Render health endpoint and Swagger login returned `200 OK`. Login through the public Vercel frontend succeeded, and the dashboard loaded 10,000 call records from the protected FastAPI endpoints backed by Neon PostgreSQL. The original Render hostname without the `-o2lz` suffix is not the active service URL.
+
+**API documentation:** https://call-analytics-backend-o2lz.onrender.com/docs
 
 Backend repository: https://github.com/ralitsavoronevska/call-analytics-backend
 
