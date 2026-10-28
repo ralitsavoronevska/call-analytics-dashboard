@@ -25,6 +25,8 @@ import type { CallRecord } from "@/types/cdr"
 
 import { ChevronDown } from "lucide-react"
 
+import { LoginForm } from "@/components/LoginForm"
+
 const PAGE_SIZE = 10
 
 const numberFormatter = new Intl.NumberFormat("en-GB", {
@@ -142,8 +144,11 @@ function useIsMobile() {
 }
 
 function App() {
+  const [accessToken, setAccessToken] = useState<string | null>(null)
+
+
   const isMobile = useIsMobile()
-  const { data, loading, error, retry } = useCallRecords()
+  const { data, loading, error, retry } = useCallRecords(accessToken)
 
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -259,6 +264,18 @@ function App() {
   )
 
   const currentPage = Math.min(page, totalPages)
+  
+  const visiblePageNumbers = Array.from(
+    { length: Math.min(5, totalPages) },
+    (_, index) => {
+      const startPage = Math.max(
+        1,
+        Math.min(totalPages - 4, currentPage - 2),
+      )
+
+      return startPage + index
+    },
+  )
 
   const visibleRecords = filteredRecords.slice(
     (currentPage - 1) * PAGE_SIZE,
@@ -266,6 +283,10 @@ function App() {
   )
 
   const resetPage = () => setPage(1)
+
+  if (!accessToken) {
+    return <LoginForm onLogin={setAccessToken} />
+  }
 
   return (
     <main className="min-h-screen bg-slate-950 px-4 py-8 text-slate-100 sm:px-6 lg:px-10">
@@ -839,6 +860,25 @@ function App() {
                   >
                     Previous
                   </button>
+
+                  {visiblePageNumbers.map((pageNumber) => (
+                    <button
+                      key={pageNumber}
+                      type="button"
+                      onClick={() => setPage(pageNumber)}
+                      aria-label={`Go to page ${pageNumber}`}
+                      aria-current={
+                        currentPage === pageNumber ? "page" : undefined
+                      }
+                      className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
+                        currentPage === pageNumber
+                          ? "border-emerald-500 bg-emerald-500 text-slate-950"
+                          : "border-slate-700 text-slate-300 hover:bg-slate-800"
+                      }`}
+                    >
+                      {pageNumber}
+                    </button>
+                  ))}
 
                   <button
                     type="button"

@@ -10,13 +10,20 @@ interface UseCallRecordsResult {
   retry: () => void
 }
 
-export function useCallRecords(): UseCallRecordsResult {
+export function useCallRecords(
+  accessToken: string | null,
+): UseCallRecordsResult {
   const [data, setData] = useState<CallRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [requestId, setRequestId] = useState(0)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (!accessToken) {
+      return
+    }
+
+    
     const controller = new AbortController()
 
     async function loadRecords() {
@@ -24,7 +31,10 @@ export function useCallRecords(): UseCallRecordsResult {
       setError(null)
 
       try {
-        const records = await getCallRecords(controller.signal)
+        const records = await getCallRecords(
+          accessToken!,
+          controller.signal,
+        )
 
         if (!controller.signal.aborted) {
           setData(records)
@@ -47,7 +57,7 @@ export function useCallRecords(): UseCallRecordsResult {
     void loadRecords()
 
      return () => controller.abort()
-  }, [requestId])
+  }, [accessToken, requestId])
 
   const retry = () => {
     setRequestId((previous) => previous + 1)
