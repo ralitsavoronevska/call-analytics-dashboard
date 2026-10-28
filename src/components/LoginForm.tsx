@@ -1,7 +1,8 @@
 
-import { useState, type FormEvent } from "react"
+import { useState, type SubmitEvent } from "react"
 
 import { login } from "@/services/auth.service"
+import { Eye, EyeOff } from "lucide-react"
 
 interface LoginFormProps {
   onLogin: (token: string) => void
@@ -10,10 +11,11 @@ interface LoginFormProps {
 export function LoginForm({ onLogin }: LoginFormProps) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
     setLoading(true)
     setError(null)
@@ -33,11 +35,11 @@ export function LoginForm({ onLogin }: LoginFormProps) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 text-slate-100">
       <div className="w-full max-w-md rounded-xl border border-slate-800 bg-slate-900 p-8 shadow-xl">
-        <h1 className="text-2xl font-bold">
+        <h1 className="text-2xl text-center font-bold">
           Call Analytics Dashboard
         </h1>
 
-        <p className="mt-2 text-sm text-slate-400">
+        <p className="mt-2 text-sm text-center text-slate-400">
           Sign in to access telecom analytics.
         </p>
 
@@ -57,19 +59,32 @@ export function LoginForm({ onLogin }: LoginFormProps) {
             />
           </div>
 
-          <div>
-            <label htmlFor="password" className="mb-2 block text-sm">
-              Password
+          <div className="space-y-2">
+            <label htmlFor="password" className="text-sm text-slate-300 focus-visible">
+                Password
             </label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 outline-none focus:border-emerald-500"
-            />
+
+            <div className="relative">
+                <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete="current-password"
+                required
+                className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 pr-11 text-white"
+                />
+
+                <button
+                type="button"
+                onClick={() => setShowPassword((previous) => !previous)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
+                className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-white"
+                >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+            </div>
           </div>
 
           {error && (
