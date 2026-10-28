@@ -137,6 +137,6 @@ Call costs are displayed in USD as specified in the assignment. The dashboard vi
 
 ---
 
-🙌 Thank you for checking out my project! More is coming 🔜.
-Stay tuned 🚀 and please don't forget to give the project a star! ⭐
-Made with lots of 💗, ☕, and a sprinkle of ✨ by Ralitsa Voronevska!
+🙌 Thank you for checking out my project! More is coming 🔜.                                                                                                                                
+Stay tuned 🚀 and please don't forget to give the project a star! ⭐                                                                                                                        
+Made with lots of 💗, ☕, and a sprinkle of ✨ by Ralitsa Voronevska!                                                                                                                       
